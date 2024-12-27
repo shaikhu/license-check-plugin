@@ -1,0 +1,45 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.spockframework:spock-core:2.4-M4-groovy-3.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+gradlePlugin {
+    plugins {
+        license {
+            id = 'com.example.license'
+            implementationClass = 'com.example.LicensePlugin'
+        }
+    }
+}
+
+sourceSets {
+    functionalTest {}
+}
+
+configurations.functionalTestImplementation.extendsFrom(configurations.testImplementation)
+configurations.functionalTestRuntimeOnly.extendsFrom(configurations.testRuntimeOnly)
+
+tasks.register('functionalTest', Test) {
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+gradlePlugin.testSourceSets.add(sourceSets.functionalTest)
+
+tasks.named('check') {
+    dependsOn('functionalTest')
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
